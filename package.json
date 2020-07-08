@@ -1,0 +1,28 @@
+{
+  "name": "json-mock-server",
+  "version": "1.0.0",
+  "description": "Configurable REST API response provider",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akhilgangula/json-mock-server.git"
+  },
+  "keywords": [
+    "RESTAPI",
+    "MOCK",
+    "JSON",
+    "Response"
+  ],
+  "author": "Akhil Reddy Gangula",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/akhilgangula/json-mock-server/issues"
+  },
+  "homepage": "https://github.com/akhilgangula/json-mock-server#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
