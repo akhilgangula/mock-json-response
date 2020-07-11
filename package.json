@@ -1,6 +1,6 @@
 {
   "name": "mock-json-response",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Configurable REST API response provider",
   "main": "index.js",
   "scripts": {
