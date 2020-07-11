@@ -1,71 +1,76 @@
-const express = require("express");
-const router = express();
 const fs = require("fs");
 const path = require("path");
+const routes = new Map();
+const Header = require("./utils/header");
 const init = (logicDir, dataDir) => {
-  this.dir = logicDir;
-  this.dataDir = dataDir;
-  express.json();
-  console.log("Loading routes...");
-
-  fs.readdir(this.dir, (err, files) => {
+    this.dir = logicDir;
+    this.dataDir = dataDir;
+    console.log("Loading routes...");
+    const files = fs.readdirSync(this.dir);
     files.forEach((file) => {
-      loadRoutes(file);
-      console.log("loaded", file);
+        loadRoutes(file);
+        console.log("loaded", file);
     });
-  });
-  return router;
+    return routes;
 };
 
 const loadRoutes = (file) => {
-  const filePath = path.join(this.dir, file);
+    const filePath = path.join(this.dir, file);
 
-  const { route, logic } = require("./" + filePath);
-  registerRoute(route.request, route.response, router, logic);
+    const route = require(filePath);
+    route.name = file;
+    registerRoute(route);
 };
 
-const registerRoute = (
-  { method, urlPath },
-  { status, bodyFileName, inlineData },
-  router,
-  logic
-) => {
-  //won't create a route if path ot method isn't defined
-  if (!(method && urlPath)) return;
+const registerRoute = (routeFile) => {
+    //won't create a route if path ot method isn't defined
+    if (!(routeFile.request.method && routeFile.request.urlPath)) {
+        console.log('urlPath or method is not defined in: ', routeFile.name);
+        return;
+    };
 
-  //import data, bodyFileName takes the precedence from inlineData
-  const data = bodyFileName ? require(this.dataDir + bodyFileName) : inlineData;
-
-  const callback = (req, res) => {
-    logic(req, data);
-    res.status(status || 200).json(data);
-  };
-
-  switch (method) {
-    case "GET":
-      router.get(urlPath, callback);
-      break;
-    case "POST":
-      router.post(urlPath, callback);
-      break;
-    case "ALL":
-      router.all(urlPath, callback);
-      break;
-    case "PUT":
-      router.put(urlPath, callback);
-      break;
-    case "DELETE":
-      router.delete(urlPath, callback);
-      break;
-    case "PATCH":
-      router.patch(urlPath, callback);
-      break;
-    case "OPTIONS":
-      router.options(urlPath, callback);
-      break;
-    case "HEAD":
-      router.head(urlPath, callback);
-      break;
-  }
+    if (routes[routeFile.request.urlPath]) {
+        //if route is already defined, add it to the map
+        const requestTypeToStubs = routes[routeFile.request.urlPath];
+        if (requestTypeToStubs[routeFile.request.method]) {
+            //if stubs for requested method is defined
+            requestTypeToStubs[routeFile.request.method][
+                routeFile.name
+            ] = constructHeadersObj(routeFile.request.headers);
+        } else {
+            requestTypeToStubs[routeFile.request.method] = getMethodToHeader(
+                routeFile.request.headers,
+                routeFile.name
+            );
+        }
+    } else {
+        routes[routeFile.request.urlPath] = getRequestTypeToStub(
+            routeFile.request,
+            routeFile.name
+        );
+    }
 };
+
+const getMethodToHeader = (headers, name) => {
+    const stubToHeaders = {};
+    stubToHeaders[name] = constructHeadersObj(headers);
+    return stubToHeaders;
+};
+
+const getRequestTypeToStub = ({ headers, method }, name) => {
+    const requestTypeToStubs = {};
+    requestTypeToStubs[method] = getMethodToHeader(headers, name);
+    return requestTypeToStubs;
+};
+
+const constructHeadersObj = (headers) => {
+    const ret = [];
+    Object.keys(headers).forEach((header) => {
+        const logicToValue = headers[header];
+        const logicFunc = Object.keys(logicToValue)[0];
+        ret.push(new Header(header, logicFunc, logicToValue[logicFunc]));
+    });
+    return ret;
+};
+
 module.exports = init;

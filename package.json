@@ -4,7 +4,8 @@
   "description": "Configurable REST API response provider",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "debug": "node --inspect=0.0.0.0:3000 test.js"
   },
   "repository": {
     "type": "git",
