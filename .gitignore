@@ -1,3 +1,5 @@
 node_modules/
 data/
 logic/
+.vscode/
+test.js

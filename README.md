@@ -1,6 +1,6 @@
 # mock-json-response
 
-A flexible RESTful API provider for front end developers to mock server response. MJR is designed to create a mock for frontend applications via a RESTApi.The basic idea of this project is to provide ready to use tool to mock a given response.
+A flexible RESTful API provider for front end developers to mock server response. The basic idea of this project is to provide ready to use tool to mock a given response.
 
 ## Installation
 
@@ -21,11 +21,14 @@ require('mock-json-response')(logicDirectory, dataDirectory)
 Directory address of both logic and data should be passed to mock-json-response. On successful start mock-json-response will be listening to 3000 port (by default).
 
 
-## Logic
-This JS file should contain 3 sections:
+## functions directory
+This contains JS files that would have 3 sections:
 1. logic: A function that would get the data and request object, ani kind of data manipulation can be performed.
 2. request: This object defines "method": type of request (GET, POST, PATCH, DELETE) and "urlPath": Path of the request as fields. 
 3. response: This object defines response status and response data.
+
+## data directory
+This contains JSON files with raw response.
 
 ## Request
 Possible fields of the request object
