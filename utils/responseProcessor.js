@@ -1,10 +1,5 @@
 const path = require('path');
-let logicFolder, dataFolder;
-
-const init = (logicDir, dataDir) => {
-    logicFolder = logicDir;
-    dataFolder = dataDir;
-}
+const store = require('./store');
 
 const getAllMatches = (reqHeaders, stubs) => {
     const incomingHeaders = Object.keys(reqHeaders);
@@ -29,13 +24,13 @@ const processData = (file, req) => {
     if (typeof "String" !== typeof file) {
         return { data: file, status: 200 };
     }
-    const logicFile = require(path.join(logicFolder, file));
+    const logicFile = require(path.join(store.functionDirectory, file));
     const responseObj = logicFile.response;
     let data;
     if (responseObj.inlineData) {
         data = responseObj.inlineData;
     } else {
-        data = require(path.join(dataFolder, responseObj.bodyFileName));
+        data = require(path.join(store.dataDirectory, responseObj.bodyFileName));
     }
     logicFile.logic(req, data);
     return { data, status: responseObj.status, headers: responseObj.headers };
@@ -46,8 +41,12 @@ const urlMatcher = (URLpattern, incomingURL) => {
     return regex.test(incomingURL)
 }
 
-const getTemplatedResponse = (routes, { url, headers, method }) => {
+const getTemplatedResponse = ({ url, headers, method }) => {
+    const routes = store.routes;
+    const scenarioMap = store.scenarioMap;
+    const allstubs = store.stubs;
     let stubs = {}, urlsWithMethods;
+
     const matchedURLs = Object.keys(routes).filter(route => urlMatcher(route, url)).map(route => route);
     if (matchedURLs.length === 0) {
         return { error: "No matched URL" };
@@ -66,12 +65,62 @@ const getTemplatedResponse = (routes, { url, headers, method }) => {
         return { warning: "No perfect headers match" }
     }
     if (allMatchedMappings.length === 1) {
-        return allMatchedMappings[0];
+        //perfect match of headers
+        const matchedFile = allMatchedMappings[0];
+        return processScenario(allstubs, scenarioMap, method, matchedFile);
     } else {
-        return { warning: "There multiple matches for this request", values: allMatchedMappings }
+        //have multiple matches
+        const processedScenarios = allMatchedMappings
+            .filter(singleFile => allstubs[singleFile].request.scenario)
+            .map(singleFile => processScenario(allstubs, scenarioMap, method, singleFile));
+        if (processedScenarios.length !== 0) {
+            const fileNames = processedScenarios
+                .filter(processedScenario => typeof processedScenario === typeof "String")
+                .map(files => files);
+            if (fileNames.length === 0) {
+                return {
+                    warning: "there was a match, but ignored as it was not fulfilling the state",
+                    tip: "if you didn't intend that to happen please remove scenario in request",
+                    possibleMatchs: allMatchedMappings
+                }
+            } else if (fileNames.length === 1) {
+                return fileNames[0];
+            } else {
+                return {
+                    warning: "There multiple matches for this request after scenarios are applied",
+                    values: fileNames
+                }
+            }
+        }
+        // .filter(singleFile => allstubs[singleFile].request.state === store.state);
+        return {
+            warning: "There multiple matches for this request",
+            values: allMatchedMappings
+        }
     }
 };
 
-exports.init = init;
+const processScenario = (allstubs, scenarioMap, method, matchedFile) => {
+    const presentScenario = allstubs[matchedFile].request.scenario;
+    const presentStage = scenarioMap[presentScenario].presentState;
+    if (method === 'GET') {
+        //get stub match with the stage
+        const stubState = allstubs[matchedFile].request.state;
+        if (stubState === presentStage) {
+            return matchedFile;
+        } else {
+            return {
+                warning: "there was a match, but ignored as it was not fulfilling the state",
+                tip: "if you didn't intend that to happen please remove scenario in request"
+            }
+        }
+    } else {
+        //increment the state of files  as present state and return the response
+        const stubState = allstubs[matchedFile].request.state;
+        scenarioMap[presentScenario].presentState = stubState;
+        return matchedFile;
+    }
+}
+
 exports.processData = processData;
 exports.getTemplatedResponse = getTemplatedResponse

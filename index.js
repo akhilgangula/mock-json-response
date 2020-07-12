@@ -3,10 +3,11 @@ const express = require("express");
 const app = express();
 const processor = require('./utils/responseProcessor');
 const { exit } = require("process");
+const store = require('./utils/store');
 
 express.json();
 
-module.exports = function requireDir(logicDir, dataDir, opts) {
+module.exports = (logicDir, dataDir, opts) => {
     opts = opts || {};
     if (!fs.existsSync(logicDir)) {
         console.log("logicDir:", logicDir, "path doesn't exist");
@@ -19,14 +20,52 @@ module.exports = function requireDir(logicDir, dataDir, opts) {
 
     //if dir path isn't valid exit the process
     if (!(logicDir && dataDir)) exit();
-    
-    const routes = require("./routes")(logicDir, dataDir);
-    processor.init(logicDir, dataDir);
+
+    //store the directories
+    store.functionDirectory = logicDir;
+    store.dataDirectory = dataDir;
+
+    //routes need directory abs path
+    require("./routes")();
+
 
     app.use((req, res, next) => {
-        const dataObj = processor.processData(processor.getTemplatedResponse(routes, req), req);
+        if (RegExp('/__admin/(.*)/reset').test(req.url)) {
+            let response, status;
+            if (req.method !== "POST") {
+                status = 400;
+                response = {
+                    error: "You have reached an invalid admin route",
+                    tip: "check request method"
+                }
+            } else {
+                const scenario = RegExp('/__admin/(.*)/reset').exec(req.url)[1];
+                console.log("Received an admin request to reset scenario: ", scenario);
+
+                if (store.scenarioMap[decodeURI(scenario)]) {
+
+                    store.scenarioMap[decodeURI(scenario)].presentState = 'init';
+                    status = 200;
+                    response = { message: "Succefully reset state of scenario: " + decodeURI(scenario) }
+                }
+                else if (scenario === 'all') {
+                    response = { message: "All scenarios are succefully reset" }
+                    status = 200;
+                } else {
+                    status = 404;
+                    response = {
+                        message: "Error while resetting state",
+                        tip: decodeURI(scenario) + " scenario was not found"
+                    }
+                }
+            }
+            res.status(status ? status : 200).send(response);
+            return;
+        }
+        const dataObj = processor.processData(processor.getTemplatedResponse(req), req);
         res.status(dataObj.status ? dataObj.status : 200).set(dataObj.headers ? { ...dataObj.headers } : {}).json(dataObj.data);
     });
+
 
     const port = 3000;
     app.listen(port, () => console.log(`Server started`));

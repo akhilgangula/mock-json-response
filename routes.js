@@ -2,24 +2,32 @@ const fs = require("fs");
 const path = require("path");
 const routes = new Map();
 const Header = require("./utils/header");
-const init = (logicDir, dataDir) => {
-    this.dir = logicDir;
-    this.dataDir = dataDir;
+const scenarioMap = {};
+const store = require('./utils/store');
+const init = () => {
+    // store.functionDirectory = logicDir;
+    // this.dataDir = dataDir;
     console.log("Loading routes...");
-    const files = fs.readdirSync(this.dir);
+    const files = fs.readdirSync(store.functionDirectory);
     files.forEach((file) => {
         loadRoutes(file);
         console.log("loaded", file);
     });
-    return routes;
+    store.routes = routes;
+    store.scenarioMap = scenarioMap;
 };
 
 const loadRoutes = (file) => {
-    const filePath = path.join(this.dir, file);
+    const filePath = path.join(store.functionDirectory, file);
 
     const route = require(filePath);
     route.name = file;
-    registerRoute(route);
+    try {
+        registerRoute(route);
+        store.addStubs(route.name, route);
+    } catch (err) {
+        console.log('Failed to load', filePath, err);
+    }
 };
 
 const registerRoute = (routeFile) => {
@@ -28,7 +36,7 @@ const registerRoute = (routeFile) => {
         console.log('urlPath or method is not defined in: ', routeFile.name);
         return;
     };
-
+    constructScenarioMap(routeFile.request, routeFile.name);
     if (routes[routeFile.request.urlPath]) {
         //if route is already defined, add it to the map
         const requestTypeToStubs = routes[routeFile.request.urlPath];
@@ -56,6 +64,25 @@ const getMethodToHeader = (headers, name) => {
     stubToHeaders[name] = constructHeadersObj(headers);
     return stubToHeaders;
 };
+
+const constructScenarioMap = ({ scenario, state }, name) => {
+    if (scenario) {
+        if (!state) throw name + " has defined scenario, but no state was found!";
+        if (!scenarioMap[scenario]) {
+            scenarioMap[scenario] = {};
+        }
+        if (!scenarioMap[scenario]['presentState']) {
+            scenarioMap[scenario]['presentState'] = 'init';
+        }
+        if (!scenarioMap[scenario]['stages']) {
+            scenarioMap[scenario]['stages'] = {};
+        }
+        if (!scenarioMap[scenario]['stages'][state]) {
+            scenarioMap[scenario]['stages'][state] = [];
+        }
+        scenarioMap[scenario]['stages'][state].push(name);
+    }
+}
 
 const getRequestTypeToStub = ({ headers, method }, name) => {
     const requestTypeToStubs = {};
