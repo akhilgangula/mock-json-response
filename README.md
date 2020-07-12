@@ -80,3 +80,7 @@ Pull requests are welcome. For major changes or features, please open an issue f
 
 1. Request Matching
 2. Response Manipulating
+
+## Git book
+
+For more information and detailed explanation. Please visit: [gitbook](https://akhilgangula.gitbook.io/mock-json-response/response)
