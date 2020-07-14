@@ -25,15 +25,14 @@ const processData = (file, req) => {
         return { data: file, status: 200 };
     }
     const logicFile = require(path.join(store.functionDirectory, file));
-    const responseObj = logicFile.response;
-    let data;
-    if (responseObj.inlineData) {
-        data = responseObj.inlineData;
+    const res = logicFile.response;
+    if (res.inlineData) {
+        res.data = res.inlineData;
     } else {
-        data = require(path.join(store.dataDirectory, responseObj.bodyFileName));
+        res.data = require(path.join(store.dataDirectory, res.bodyFileName));
     }
-    logicFile.logic(req, data);
-    return { data, status: responseObj.status, headers: responseObj.headers };
+    logicFile.logic(req, res);
+    return res;
 }
 
 const urlMatcher = (URLpattern, incomingURL) => {

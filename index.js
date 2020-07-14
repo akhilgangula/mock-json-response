@@ -62,8 +62,8 @@ module.exports = (logicDir, dataDir, opts) => {
             res.status(status ? status : 200).send(response);
             return;
         }
-        const dataObj = processor.processData(processor.getTemplatedResponse(req), req);
-        res.status(dataObj.status ? dataObj.status : 200).set(dataObj.headers ? { ...dataObj.headers } : {}).json(dataObj.data);
+        const response = processor.processData(processor.getTemplatedResponse(req), req);
+        res.status(response.status ? response.status : 200).set(response.headers ? { ...response.headers } : {}).json(response.data);
     });
 
 

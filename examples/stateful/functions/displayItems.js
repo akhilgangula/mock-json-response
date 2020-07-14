@@ -1,5 +1,5 @@
 module.exports = {
-    logic: function ({ headers }, data) {
+    logic: function ({ headers }, { data }) {
         // logic need not have any statements
     },
     request: {

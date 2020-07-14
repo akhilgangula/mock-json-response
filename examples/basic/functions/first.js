@@ -1,5 +1,5 @@
 module.exports = {
-    logic: function ({ headers }, data) {
+    logic: function ({ headers }, { data }) {
         data.value = headers["x-mock-feature"];
     },
     request: {
