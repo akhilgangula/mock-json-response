@@ -54,7 +54,7 @@ Possible fields of the response object. If both inlineData and bodyFileName is p
 
 ```js
 {
-    status: 200,  //status to returned
+    status: 200,  //status to be returned
     headers: {    //headers in response
         "Content-Type": "application/json",
     },

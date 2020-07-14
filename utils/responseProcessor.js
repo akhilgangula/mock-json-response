@@ -54,12 +54,14 @@ const getTemplatedResponse = ({ url, headers, method }) => {
         urlsWithMethods = matchedURLs.filter(url => routes[url][method]).map(url => url);
         if (urlsWithMethods.length === 0) return { error: "No Matched Request method" };
     }
+
     urlsWithMethods.forEach(route => {
         const multipleStubs = routes[route][method];
         Object.keys(multipleStubs).forEach(stubName => {
             stubs[stubName] = multipleStubs[stubName];
         })
     })
+
     const allMatchedMappings = getAllMatches(headers, stubs);
     if (allMatchedMappings.length === 0) {
         return { warning: "No perfect headers match" }
@@ -67,12 +69,12 @@ const getTemplatedResponse = ({ url, headers, method }) => {
     if (allMatchedMappings.length === 1) {
         //perfect match of headers
         const matchedFile = allMatchedMappings[0];
-        return processScenario(allstubs, scenarioMap, method, matchedFile);
+        return processScenario(allstubs, scenarioMap, matchedFile);
     } else {
         //have multiple matches
         const processedScenarios = allMatchedMappings
             .filter(singleFile => allstubs[singleFile].request.scenario)
-            .map(singleFile => processScenario(allstubs, scenarioMap, method, singleFile));
+            .map(singleFile => processScenario(allstubs, scenarioMap, singleFile));
         if (processedScenarios.length !== 0) {
             const fileNames = processedScenarios
                 .filter(processedScenario => typeof processedScenario === typeof "String")
@@ -81,7 +83,7 @@ const getTemplatedResponse = ({ url, headers, method }) => {
                 return {
                     warning: "there was a match, but ignored as it was not fulfilling the state",
                     tip: "if you didn't intend that to happen please remove scenario in request",
-                    possibleMatchs: allMatchedMappings
+                    possibleMatches: allMatchedMappings
                 }
             } else if (fileNames.length === 1) {
                 return fileNames[0];
@@ -100,10 +102,11 @@ const getTemplatedResponse = ({ url, headers, method }) => {
     }
 };
 
-const processScenario = (allstubs, scenarioMap, method, matchedFile) => {
+const processScenario = (allstubs, scenarioMap, matchedFile) => {
     const presentScenario = allstubs[matchedFile].request.scenario;
     const presentStage = scenarioMap[presentScenario].presentState;
-    if (method === 'GET') {
+    const targetState = allstubs[matchedFile].request.targetState;
+    if (!targetState) {
         //get stub match with the stage
         const stubState = allstubs[matchedFile].request.state;
         if (stubState === presentStage) {
@@ -116,8 +119,7 @@ const processScenario = (allstubs, scenarioMap, method, matchedFile) => {
         }
     } else {
         //increment the state of files  as present state and return the response
-        const stubState = allstubs[matchedFile].request.state;
-        scenarioMap[presentScenario].presentState = stubState;
+        scenarioMap[presentScenario].presentState = targetState;
         return matchedFile;
     }
 }

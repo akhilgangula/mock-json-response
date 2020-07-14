@@ -4,7 +4,8 @@ module.exports = {
     },
     request: {
         scenario: "shopping list",
-        state: "state_2",
+        state: "init",
+        targetState: "state_2",
         method: "POST",
         urlPath: "/mock/list",
         headers: {
