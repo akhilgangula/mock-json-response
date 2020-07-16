@@ -67,6 +67,6 @@ module.exports = (logicDir, dataDir, opts) => {
     });
 
 
-    const port = 3000;
-    app.listen(port, () => console.log(`Server started`));
+    const port = opts.port ? opts.port : 3000;
+    app.listen(port, () => console.log(`Server started at ${port}`));
 };

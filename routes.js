@@ -9,6 +9,7 @@ const init = () => {
     // this.dataDir = dataDir;
     console.log("Loading routes...");
     const files = fs.readdirSync(store.functionDirectory);
+    files.length === 0 && console.log("No routes found");
     files.forEach((file) => {
         loadRoutes(file);
         console.log("loaded", file);
