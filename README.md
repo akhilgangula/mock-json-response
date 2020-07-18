@@ -67,7 +67,7 @@ Possible fields of the response object. If both inlineData and bodyFileName is p
 
 ## logic
 ```js
-logic: function ({ headers, params }, data) {
+logic: function ({ headers, params }, { data }) {
       //data manipulation logic goes here
 }
 ```

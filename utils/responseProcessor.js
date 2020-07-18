@@ -31,7 +31,7 @@ const processData = (file, req) => {
     } else {
         res.data = require(path.join(store.dataDirectory, res.bodyFileName));
     }
-    logicFile.logic(req, res);
+    logicFile.logic && logicFile.logic(req, res);
     return res;
 }
 
