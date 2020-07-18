@@ -93,7 +93,7 @@ const getRequestTypeToStub = ({ headers, method }, name) => {
 
 const constructHeadersObj = (headers) => {
     const ret = [];
-    Object.keys(headers).forEach((header) => {
+    headers && Object.keys(headers).forEach((header) => {
         const logicToValue = headers[header];
         const logicFunc = Object.keys(logicToValue)[0];
         ret.push(new Header(header, logicFunc, logicToValue[logicFunc]));
