@@ -93,7 +93,6 @@ const getTemplatedResponse = ({ url, headers, method }) => {
                 }
             }
         }
-        // .filter(singleFile => allstubs[singleFile].request.state === store.state);
         return {
             warning: "There multiple matches for this request",
             values: allMatchedMappings
@@ -103,6 +102,7 @@ const getTemplatedResponse = ({ url, headers, method }) => {
 
 const processScenario = (allstubs, scenarioMap, matchedFile) => {
     const presentScenario = allstubs[matchedFile].request.scenario;
+    if(!presentScenario) return presentScenario;
     const presentStage = scenarioMap[presentScenario].presentState;
     const targetState = allstubs[matchedFile].request.targetState;
     if (!targetState) {
