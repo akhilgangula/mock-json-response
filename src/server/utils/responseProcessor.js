@@ -1,7 +1,7 @@
 const path = require('path');
 const store = require('./store');
 
-export const getAllMatches = (reqHeaders, stubs) => {
+const getAllMatches = (reqHeaders, stubs) => {
     const incomingHeaders = Object.keys(reqHeaders);
     const files = Object.keys(stubs);
     const ret = [];
@@ -20,7 +20,7 @@ export const getAllMatches = (reqHeaders, stubs) => {
 };
 
 
-export const processData = (file, req) => {
+const processData = (file, req) => {
     if (typeof "String" !== typeof file) {
         return { data: file, status: 200 };
     }
@@ -35,12 +35,12 @@ export const processData = (file, req) => {
     return res;
 }
 
-export const urlMatcher = (URLpattern, incomingURL) => {
+const urlMatcher = (URLpattern, incomingURL) => {
     const regex = RegExp(URLpattern);
     return regex.test(incomingURL)
 }
 
-export const getTemplatedResponse = ({ url, headers, method }) => {
+const getTemplatedResponse = ({ url, headers, method }) => {
     const routes = store.routes;
     const scenarioMap = store.scenarioMap;
     const allstubs = store.stubs;
@@ -101,7 +101,7 @@ export const getTemplatedResponse = ({ url, headers, method }) => {
     }
 };
 
-export const processScenario = (allstubs, scenarioMap, matchedFile) => {
+const processScenario = (allstubs, scenarioMap, matchedFile) => {
     const presentScenario = allstubs[matchedFile].request.scenario;
     if(!presentScenario) return matchedFile;
     const presentStage = scenarioMap[presentScenario].presentState;
@@ -124,3 +124,5 @@ export const processScenario = (allstubs, scenarioMap, matchedFile) => {
     }
 }
 
+module.processData = processData;
+module.getTemplatedResponse = getTemplatedResponse;

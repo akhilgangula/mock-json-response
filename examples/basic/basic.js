@@ -2,4 +2,4 @@ const dir1 = __dirname + '/functions';
 const dir2 = __dirname + '/data';
 console.log(dir1, dir2);
 
-require('../../dist/index')(dir1, dir2)
+require('../../src/index')(dir1, dir2)

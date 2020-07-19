@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "debug": "node",
     "build": "babel src -d dist",
     "start": "npm run build && node",
     "restart": "rimraf dist && npm run start",
