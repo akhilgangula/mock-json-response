@@ -4,15 +4,16 @@ const routes = new Map();
 const Header = require("./utils/header");
 const scenarioMap = {};
 const store = require('./utils/store');
+const logger = require('./utils/log');
 const init = () => {
     // store.functionDirectory = logicDir;
     // this.dataDir = dataDir;
-    console.log("Loading routes...");
+    logger.info({message: "Loading routes..."});
     const files = fs.readdirSync(store.functionDirectory);
-    files.length === 0 && console.log("No routes found");
+    files.length === 0 && logger.warn({message: "No routes found"});
     files.forEach((file) => {
         loadRoutes(file);
-        console.log("loaded", file);
+        logger.info({message: "loaded", stub: file});
     });
     store.routes = routes;
     store.scenarioMap = scenarioMap;
@@ -27,14 +28,14 @@ const loadRoutes = (file) => {
         registerRoute(route);
         store.addStubs(route.name, route);
     } catch (err) {
-        console.log('Failed to load', filePath, err);
+        logger.error({message: 'Failed to load', filePath, err});
     }
 };
 
 const registerRoute = (routeFile) => {
     //won't create a route if path ot method isn't defined
     if (!(routeFile.request.method && routeFile.request.urlPath)) {
-        console.log('urlPath or method is not defined in: ', routeFile.name);
+        logger.warn({message:'urlPath or method is not defined', stub: routeFile.name});
         return;
     };
     constructScenarioMap(routeFile.request, routeFile.name);

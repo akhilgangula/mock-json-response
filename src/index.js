@@ -1,20 +1,20 @@
 const fs = require("fs");
 const express = require("express");
 const app = express();
-const processor = require('./utils/responseProcessor');
+const processor = require('./server/utils/responseProcessor');
 const { exit } = require("process");
-const store = require('./utils/store');
-
+const store = require('./server/utils/store');
+const logger = require('./server/utils/log');
 express.json();
 
 module.exports = (logicDir, dataDir, opts) => {
     opts = opts || {};
     if (!fs.existsSync(logicDir)) {
-        console.log("logicDir:", logicDir, "path doesn't exist");
+        logger.info({message: "logicDir: " + logicDir + " path doesn't exist"});
         logicDir = undefined;
     }
     if (!fs.existsSync(dataDir)) {
-        console.log("dataDir", dataDir, " path doesn't exist");
+        logger.info({message: "dataDir " + dataDir + " path doesn't exist"});
         dataDir = undefined;
     }
 
@@ -26,7 +26,7 @@ module.exports = (logicDir, dataDir, opts) => {
     store.dataDirectory = dataDir;
 
     //routes need directory abs path
-    require("./routes")();
+    require("./server/routes")();
 
 
     app.use((req, res, next) => {
@@ -40,7 +40,7 @@ module.exports = (logicDir, dataDir, opts) => {
                 }
             } else {
                 const scenario = RegExp('/__admin/(.*)/reset').exec(req.url)[1];
-                console.log("Received an admin request to reset scenario: ", scenario);
+                logger.info({message:"Received an admin request to reset scenario", scenario});
 
                 if (store.scenarioMap[decodeURI(scenario)]) {
 
@@ -68,5 +68,5 @@ module.exports = (logicDir, dataDir, opts) => {
 
 
     const port = opts.port ? opts.port : 3000;
-    app.listen(port, () => console.log(`Server started at ${port}`));
+    app.listen(port, () => logger.info({message: `Server started at ${port}`}));
 };

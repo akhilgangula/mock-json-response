@@ -4,8 +4,11 @@
   "description": "Configurable REST API response provider",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "debug": "node --inspect=0.0.0.0:3000 test.js"
+    "test": "jest",
+    "build": "babel src -d dist",
+    "start": "npm run build && node",
+    "restart": "rimraf dist && npm run start",
+    "dev": "nodemon --exec npm run restart"
   },
   "repository": {
     "type": "git",
@@ -25,6 +28,15 @@
   },
   "homepage": "https://github.com/akhilgangula/json-mock-server#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "nodemon": "^2.0.4",
+    "rimraff": "0.0.1-security",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.10.5",
+    "@babel/core": "^7.10.5",
+    "@babel/preset-env": "^7.10.4",
+    "jest": "^26.1.0"
   }
 }
